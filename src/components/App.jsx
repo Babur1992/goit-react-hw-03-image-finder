@@ -70,6 +70,4 @@ export const App = () => {
       {current && <Modal onClose={() => setCurrent(null)} image={current} />}
     </div>
   );
-};
-
-
+}
