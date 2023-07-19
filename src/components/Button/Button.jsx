@@ -1,34 +1,15 @@
+import PropTypes from 'prop-types';
+import style from './Button.module.css';
 
-import Button from './Button';
-
-
-export const ImageGallery = ({ images, onLoadMore }) => {
-  let showLoadMore = true;
-
-  const handleLoadMore = () => {
-    onLoadMore();
-  };
-
-  const handleImageLoad = () => {
-    showLoadMore = true;
-  };
-
+export const Button = ({ onClick, disabled }) => {
   return (
-    <div>
-      <ul className="gallery">
-        {images.map(image => (
-          <li key={image.id} className="gallery-item">
-            <img
-              src={image.webformatURL}
-              alt={image.id}
-              onLoad={handleImageLoad}
-            />
-          </li>
-        ))}
-      </ul>
-      {showLoadMore && images.length > 0 && (
-        <Button onClick={handleLoadMore}>Load more</Button>
-      )}
-    </div>
+    <button className={style.button} disabled={disabled} onClick={onClick}>
+      Load more
+    </button>
   );
+};
+
+Button.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
 };

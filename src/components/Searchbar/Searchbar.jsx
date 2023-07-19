@@ -1,22 +1,30 @@
-import React from 'react';
+import PropTypes from 'prop-types';
+import style from './Searchbar.module.css';
 
 export const Searchbar = ({ onSubmit }) => {
-  const handleSubmit = event => {
-    event.preventDefault();
-    const inputValue = event.target.elements.searchInput.value;
-    onSubmit(inputValue);
+  const handleSubmit = e => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const { query } = form.elements;
+
+    onSubmit(query.value);
   };
 
   return (
-    <header className="searchbar">
-      <form className="form" onSubmit={handleSubmit}>
+    <header className={style.searchbar}>
+      <form className={style.searchForm} onSubmit={handleSubmit}>
+        <button type="submit" className={style.searchFormButton}>
+          <span className={style.searchFormButtonlabel}>Search</span>
+        </button>
+
         <input
-          className="input"
+          name="query"
+          className={style.searchFormInput}
           type="text"
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
-          name="searchInput"
+          //   name="searchInput"
         />
         <button type="submit" className="button">
           <span className="button-label">Search</span>
@@ -24,4 +32,8 @@ export const Searchbar = ({ onSubmit }) => {
       </form>
     </header>
   );
+};
+
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
 };

@@ -1,12 +1,13 @@
-const URL = 'https://pixabay.com/api/';
-const key = '36775018-abad017b89dacc6f8ffcc7875';
+import axios from 'axios';
 
-const getImages = (data) => {
-    fetch(`${URL}/?${key}&q`)
-    .then((res) => {
-        res.json(console.log())
-       
-    })
-}
+const URL = 'https://pixabay.com/api';
+const API_KEY = '36775018-abad017b89dacc6f8ffcc7875';
 
-getImages('data')
+export const Api = {
+  fetchImages(query, page) {
+    return axios.get(
+      `${URL}/?q=${query}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
+    );
+  },
+};
+

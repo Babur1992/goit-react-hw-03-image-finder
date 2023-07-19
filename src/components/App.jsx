@@ -1,93 +1,75 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
-
 import { Modal } from './Modal/Modal';
-
-
-const API_URL = 'https://pixabay.com/api/';
-const API_KEY = '36775018-abad017b89dacc6f8ffcc7875';
+import { Empty } from './UseMemo/UseMemo';
+import { Loader } from './Loader/Loader';
+import { Button } from './Button/Button';
+import { Api } from './Appi/Appi';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { useMemo } from 'react';
 
 export const App = () => {
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
   const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [query, setQuery] = useState('');
+  const [total, setTotal] = useState(13);
+  const [current, setCurrent] = useState(null);
 
   useEffect(() => {
-    const fetchImages = async () => {
-      if (query.trim() === '') {
-        setImages([]);
-        return;
-      }
-
+    const fetchImages = () => {
       setIsLoading(true);
-
-      try {
-        const response = await axios.get(API_URL, {
-          params: {
-            key: API_KEY,
-            q: query,
-            page,
-            per_page: 12,
-          },
+      Api.fetchImages(query, page)
+        .then(res => {
+          setImages(prevState => [...prevState, ...res.data.hits]);
+          setTotal(res.data.total);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
-
-        const data = response.data;
-        const fetchedImages = data.hits.map(image => ({
-          id: image.id,
-          webformatURL: image.webformatURL,
-          largeImageURL: image.largeImageURL,
-        }));
-
-        if (page === 1) {
-          setImages(fetchedImages);
-        } else {
-          setImages(prevImages => [...prevImages, ...fetchedImages]);
-        }
-      } catch (error) {
-        console.log('Error fetching images:', error);
-      }
-
-      setIsLoading(false);
     };
 
-    fetchImages();
-  }, [query, page]);
+    if (query.length > 0) fetchImages();
+  }, [page, query]);
 
-  const handleSearch = newQuery => {
-    setQuery(newQuery);
+  const onSubmit = query => {
+    setQuery(query);
     setPage(1);
+    setImages([]);
   };
 
-  const loadMoreImages = () => {
-    setPage(prevPage => prevPage + 1);
-  };
+  const hasImages = useMemo(() => {
+    return images.length > 0;
+  }, [images]);
 
-  const openModal = image => {
-    setSelectedImage(image);
-  };
+  const hasLoading = useMemo(() => {
+    return !hasImages && isLoading;
+  }, [isLoading, hasImages]);
 
-  const closeModal = () => {
-    setSelectedImage(null);
-  };
+  const hasButton = useMemo(() => {
+    return hasImages ? page < Math.ceil(total / 12) : false;
+  }, [page, total, hasImages]);
 
   return (
-    <div>
-      <Searchbar onSubmit={handleSearch} />
-      <ImageGallery images={images} onSelect={openModal} />
-
-      {images.length > 0 && !isLoading && (
-        <button onClick={loadMoreImages}>Завантажити ще</button>
+    <div className="App">
+      <Searchbar onSubmit={onSubmit} />
+      {hasImages ? (
+        <ImageGallery
+          onClickImage={image => setCurrent(image)}
+          images={images}
+        />
+      ) : (
+        !isLoading && <Empty />
       )}
-      <Modal isOpen={selectedImage !== null} onClose={closeModal}>
-        {selectedImage && (
-          <img src={selectedImage.largeImageURL} alt={selectedImage.id} />
-        )}
-      </Modal>
-     
+      {hasLoading && <Loader />}
+      {hasButton && (
+        <Button disabled={isLoading} onClick={() => setPage(page + 1)} />
+      )}
+
+      {current && <Modal onClose={() => setCurrent(null)} image={current} />}
     </div>
   );
 };
+
+
